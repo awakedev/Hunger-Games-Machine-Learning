@@ -10,17 +10,24 @@ class Vehicle {
 		this.health = 1;
 
 		this.dna = [];
-		this.dna[0] = random(-5, 5);
-		this.dna[1] = random(-5, 5);
+		//Food weight
+		this.dna[0] = random(-2, 2);
+		//Poison Weight
+		this.dna[1] = random(-2, 2);
+		//Food Perception
+		this.dna[2] = random(10, 100);
+		// Poison Perception
+		this.dna[3] = random(10, 100);
 	}
+	
 
 	dead() {
 		return (this.health < 0)
 	}
 
 	behaviors(good, bad) {
-		var steerG = this.eat(good, 0.2);
-		var steerB = this.eat(bad, -0.1);
+		var steerG = this.eat(good, 0.3, this.dna[2]);
+		var steerB = this.eat(bad, -0.1, this.dna[3]);
 
 		steerG.mult(this.dna[0]);
 		steerB.mult(this.dna[1]);
@@ -31,7 +38,7 @@ class Vehicle {
 
 	// Method to update location
 	update() {
-		this.health -= 0.0045;
+		this.health -= 0.00045;
 		console.log(this.health)
 		// Update velocity
 		this.velocity.add(this.acceleration);
@@ -47,12 +54,12 @@ class Vehicle {
 		this.acceleration.add(force);
 	}
 
-	eat(list, nutrition) {
+	eat(list, nutrition, perception) {
 		var record = Infinity;
 		var closest = -1;
 		for (var i = 0; i < list.length; i++) {
 			var d = this.position.dist(list[i]);
-			if (d < record) {
+			if (d < record && d < perception) {
 				record = d;
 				closest = i;
 			}
@@ -94,10 +101,12 @@ class Vehicle {
 		rotate(angle);
 
 		stroke(0, 255, 0);
-		line(0, 0, 0, -this.dna[0] * 20);
+		noFill();
+		line(0, 0, 0, -this.dna[0] * 25);
+		ellipse(0,0,this.dna[2] * 2);
 		stroke(255, 0, 0);
-		line(0, 0, 0, -this.dna[1] * 10);
-
+		line(0, 0, 0, -this.dna[1] * 25);
+		ellipse(0,0,this.dna[3] * 2)
 
 		var gr = color(0, 255, 0);
 		var rd = color(255, 0, 0);
@@ -113,5 +122,32 @@ class Vehicle {
 		endShape(CLOSE);
 
 		pop();
+	}
+
+	boundaries() {
+		var d = 25;
+
+		var desired = null;
+
+		if (this.position.x < d) {
+			desired = createVector(this.maxspeed, this.velocity.y);
+		} else if (this.position.x > width - d) {
+			desired = createVector(-this.maxspeed, this.velocity.y);
+		}
+
+		if (this.position.y < d) {
+			desired = createVector(this.velocity.x, this.maxspeed);
+		} else if (this.position.y > height - d) {
+			desired = createVector(this.velocity.x, -this.maxspeed);
+		}
+
+		if (desired !== null) {
+			desired.normalize();
+			desired.mult(this.maxspeed);
+			var steer = p5.Vector.sub(desired, this.velocity);
+			steer.limit(this.maxforce);
+			this.applyForce(steer);
+
+		}
 	}
 }

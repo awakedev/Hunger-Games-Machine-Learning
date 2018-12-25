@@ -3,7 +3,7 @@ let food = [];
 let toxin = [];
 
 function setup() {
-    createCanvas(600, 600);
+    createCanvas(400, 400);
     for (var i = 0; i < 2; i++) {
         v[i] = new Vehicle(width / 2, height / 2);
     }
@@ -29,6 +29,13 @@ function draw() {
         food.push(createVector(x, y));
     }
 
+    if ( random (1) < 0.01) {
+        var x = random(width);
+        var y = random(height);
+        toxin.push(createVector(x, y));
+    }
+
+
     let mouse = createVector(mouseX, mouseY);
 
 
@@ -48,6 +55,8 @@ function draw() {
 
     // Call the appropriate steering behaviors for our agents
     for (var i =  v.length-1; i >=0 ; i--) {
+        v[i].boundaries();
+
         v[i].behaviors(food, toxin);
         v[i].update();
         v[i].display();
