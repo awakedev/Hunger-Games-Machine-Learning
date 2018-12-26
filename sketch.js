@@ -1,71 +1,86 @@
-let v = [];
-let food = [];
-let toxin = [];
+
+var vehicles = [];
+var food = [];
+var poison = [];
+
+var debug;
 
 function setup() {
-    createCanvas(400, 400);
-    for (var i = 0; i < 2; i++) {
-        v[i] = new Vehicle(width / 2, height / 2);
-    }
+  createCanvas(1350, 500);
+  for (var i = 0; i < 50; i++) {
+    var x = random(width);
+    var y = random(height);
+    vehicles[i] = new Vehicle(x, y);
+  }
 
-    for (var i = 0; i < 50; i++) {
-        var x = random(width);
-        var y = random(height);
-        food.push(createVector(x, y));
-    }
-    for (var i = 0; i < 10; i++) {;
-        var x = random(width);
-        var y = random(height);
-        toxin.push(createVector(x, y));
-    }
+  for (var i = 0; i < 40; i++) {
+    var x = random(width);
+    var y = random(height);
+    food.push(createVector(x, y));
+  }
+
+  for (var i = 0; i < 20; i++) {
+    var x = random(width);
+    var y = random(height);
+    poison.push(createVector(x, y));
+  }
+
+  debug = createCheckbox();
+
+
+
+
+}
+
+function mouseDragged() {
+  vehicles.push(new Vehicle(mouseX, mouseY));
 }
 
 function draw() {
-    background(51);
+  background(51);
 
-    if ( random (1) < 0.05) {
-        var x = random(width);
-        var y = random(height);
-        food.push(createVector(x, y));
+  if (random(1) < 0.1) {
+    var x = random(width);
+    var y = random(height);
+    food.push(createVector(x, y));
+  }
+
+  if (random(1) < 0.01) {
+    var x = random(width);
+    var y = random(height);
+    poison.push(createVector(x, y));
+  }
+
+
+  for (var i = 0; i < food.length; i++) {
+    fill(0, 255, 0);
+    noStroke();
+    ellipse(food[i].x, food[i].y, 4, 4);
+  }
+
+  for (var i = 0; i < poison.length; i++) {
+    fill(255, 0, 0);
+    noStroke();
+    ellipse(poison[i].x, poison[i].y, 4, 4);
+  }
+
+  for (var i = vehicles.length - 1; i >= 0; i--) {
+    vehicles[i].boundaries();
+    vehicles[i].behaviors(food, poison);
+    vehicles[i].update();
+    vehicles[i].display();
+
+    var newVehicle = vehicles[i].clone();
+    if (newVehicle != null) {
+      vehicles.push(newVehicle);
     }
 
-    if ( random (1) < 0.01) {
-        var x = random(width);
-        var y = random(height);
-        toxin.push(createVector(x, y));
+    if (vehicles[i].dead()) {
+      var x = vehicles[i].position.x;
+      var y = vehicles[i].position.y;
+      food.push(createVector(x, y));
+      vehicles.splice(i, 1);
     }
 
-
-    let mouse = createVector(mouseX, mouseY);
-
-
-    for (var i = 0; i < food.length; i++) {
-        fill(0, 255, 0);
-        noStroke();
-        ellipse(food[i].x, food[i].y, 8, 8);
-    }
-
-
-    for (var i = 0; i < toxin.length; i++) {
-        fill(255, 0, 0);
-        noStroke();
-        ellipse(toxin[i].x, toxin[i].y, 8, 8);
-    }
-
-
-    // Call the appropriate steering behaviors for our agents
-    for (var i =  v.length-1; i >=0 ; i--) {
-        v[i].boundaries();
-
-        v[i].behaviors(food, toxin);
-        v[i].update();
-        v[i].display();
-
-        // if health less than 0, delete from array
-        if (v[i].dead()) {
-            v.splice(i, 1);
-        }
-
-    }
-
+  }
 }
